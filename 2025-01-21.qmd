@@ -1,0 +1,68 @@
+---
+title: "Tidytuesday"
+format: html
+editor: visual
+---
+
+## Tidy Tuesday
+
+
+## Downloading Data
+
+```{r}
+# Option 1: tidytuesdayR package 
+## install.packages("tidytuesdayR")
+
+tuesdata <- tidytuesdayR::tt_load('2025-01-21')
+exped_tidy <- tuesdata$exped_tidy
+peaks_tidy <- tuesdata$peaks_tidy
+
+```
+```{r}
+library(tidyverse)
+library(dplyr)
+library(viridis)
+```
+
+```{r}
+exped_tidy %>% 
+  group_by(TERMREASON_FACTOR) %>% 
+  ggplot(aes(x = TERMREASON_FACTOR))+
+  geom_bar()+
+  theme_minimal()
+```
+```{r}
+exped_tidy %>% 
+  group_by(TERMREASON_FACTOR) %>% 
+  summarise(count = n()) %>% 
+  ggplot(aes(x = "", y = count, fill = TERMREASON_FACTOR)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  labs(fill = "Termination Reason")
+```
+```{r}
+# Summarize the data to get counts for each combination of TERMREASON_FACTOR and SEASON_FACTOR
+exped_grouped <- exped_tidy %>%
+  group_by(SEASON_FACTOR, TERMREASON_FACTOR) %>%
+  summarise(count = n(), .groups = 'drop')
+
+stacked_TERMREASON <-  ggplot(exped_grouped, aes(x = SEASON_FACTOR, y = count, fill = TERMREASON_FACTOR)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Season", 
+    y = "Count", 
+    fill = "Termination Reason", 
+    title = "Reasons for Termination by Season"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+  ggsave("stacked_TERMREASON", device = "jpg")
+  
+  
+```
+
+
