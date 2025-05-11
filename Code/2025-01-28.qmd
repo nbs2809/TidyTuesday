@@ -1,0 +1,46 @@
+---
+title: "TidyTuesday3"
+format: html
+editor: visual
+---
+
+### Loading packages
+
+```{r}
+library(tidyverse)
+```
+
+## Data water insecurity
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2025, week = 4)
+
+water_insecurity_2022 <- tuesdata$water_insecurity_2022
+water_insecurity_2023 <- tuesdata$water_insecurity_2023
+
+head(water_insecurity_2023)
+```
+```{r}
+water_insecurity_2023 <- water_insecurity_2023 %>%
+  mutate(state = str_extract(name, "(?<=,\\s).*"))
+```
+
+```{r}
+water_insecurity_2023_plot <- water_insecurity_2023 %>% 
+  filter(!is.na(percent_lacking_plumbing)) %>%
+  group_by(state) %>%
+  summarize(mean_percent_lacking = mean(percent_lacking_plumbing, na.rm = TRUE)) %>% 
+  ggplot(aes(x = fct_reorder(state, mean_percent_lacking), 
+             y = mean_percent_lacking)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Percent of Population Lacking Plumbing by State (2023)", subtitle = "For counties have the greatest percent of households lacking plumbing",
+       x = "State",
+       y = "Percent Lacking Plumbing") +
+  theme_minimal(base_size = 13)
+
+
+
+ggsave("water_insecurity_2023_plot.jpg", plot = water_insecurity_2023_plot, device = "jpg", width = 8, height = 10)
+```
+
