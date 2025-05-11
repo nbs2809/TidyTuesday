@@ -1,0 +1,59 @@
+---
+title: "TidyTuesday_PalmTrees"
+format: html
+editor: visual
+---
+
+
+### Loading packages
+```{r}
+library(tidyverse)
+```
+
+
+## Data Palm trees
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2025, week = 11)
+
+palmtrees <- tuesdata$palmtrees
+
+head(palmtrees)
+```
+```{r}
+palmtrees %>%
+  filter(stem_solitary %in% c("non-solitary", "solitary")) %>% 
+  group_by(stem_solitary,average_fruit_width_cm) %>% 
+  summarize(mean_stemHeight = mean(max_stem_height_m, na.rm = TRUE), .groups = "drop") %>% 
+  
+  ggplot(aes(x = stem_solitary, y = average_fruit_width_cm, color = max_stem_height_m
+)) +
+  geom_point() +
+  theme_minimal()
+```
+```{r}
+palmtrees %>%
+  filter(stem_solitary %in% c("non-solitary", "solitary")) %>%
+  ggplot(aes(x = stem_solitary, y = average_fruit_width_cm, color = max_stem_height_m)) +
+  geom_jitter() +
+  scale_color_viridis_c() +
+  theme_minimal()
+```
+
+```{r}
+fruit_size_by_growth_form <-  palmtrees %>%
+  filter(stem_solitary %in% c("non-solitary", "solitary")) %>%
+  mutate(height = case_when(
+    max_stem_height_m < 5 ~ "<5m",
+    max_stem_height_m < 15 ~ "5–15m",
+    max_stem_height_m < 25 ~ "15–25m",
+    TRUE ~ ">25m")) %>%
+  ggplot(aes(x = stem_solitary, y = average_fruit_width_cm, color = height)) +
+  geom_jitter(width = 0.4, alpha = 0.7) +
+scale_color_brewer(palette = "Greens", name = "Stem Height")+
+  theme_minimal() +
+  labs(x = "Growth Form", y = "Average Fruit Width (cm)", title = "Fruit Size by Growth Form and Stem Height Category")
+
+ggsave("fruit_size_by_growth_form.jpg", plot = fruit_size_by_growth_form, device = "jpg", width = 8, height = 6)
+
+```
+
